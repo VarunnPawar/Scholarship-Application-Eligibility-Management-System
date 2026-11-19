@@ -1,1 +1,0 @@
-# Scholarship-Application-Eligibility-Management-System
