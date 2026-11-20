@@ -343,7 +343,7 @@ function renderCharts() {
                         overviewData.rejectedCount || 0
                     ],
                     backgroundColor: ['rgba(16, 185, 129, 0.85)', 'rgba(245, 158, 11, 0.85)', 'rgba(239, 68, 68, 0.85)'],
-                    borderColor: 'rgba(255, 255, 255, 0.12)',
+                    borderColor: '#ffffff',
                     borderWidth: 2,
                     hoverOffset: 6
                 }]
@@ -354,7 +354,7 @@ function renderCharts() {
                 plugins: {
                     legend: {
                         position: 'bottom',
-                        labels: { color: '#cbd5e1', font: { size: 11, weight: '500' }, padding: 16 }
+                        labels: { color: '#334155', font: { size: 11, weight: '550' }, padding: 16 }
                     }
                 },
                 cutout: '72%'
@@ -376,8 +376,8 @@ function renderCharts() {
                 datasets: [{
                     label: 'Applications Received',
                     data: counts,
-                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                    borderColor: '#60a5fa',
+                    backgroundColor: 'rgba(37, 99, 235, 0.78)',
+                    borderColor: '#2563eb',
                     borderWidth: 1.5,
                     borderRadius: 6
                 }]
@@ -387,8 +387,8 @@ function renderCharts() {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { display: false } },
-                    y: { ticks: { color: '#94a3b8', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.06)' } }
+                    x: { ticks: { color: '#475569', font: { size: 10 } }, grid: { display: false } },
+                    y: { ticks: { color: '#475569', stepSize: 1 }, grid: { color: 'rgba(148, 163, 184, 0.18)' } }
                 }
             }
         });
@@ -408,13 +408,13 @@ function renderCharts() {
                 datasets: [{
                     data: fAmounts.length ? fAmounts : [50000, 20000, 30000, 40000, 75000],
                     backgroundColor: [
-                        'rgba(59, 130, 246, 0.7)',
-                        'rgba(16, 185, 129, 0.7)',
-                        'rgba(245, 158, 11, 0.7)',
-                        'rgba(168, 85, 247, 0.7)',
-                        'rgba(236, 72, 153, 0.7)'
+                        'rgba(37, 99, 235, 0.75)',
+                        'rgba(16, 185, 129, 0.75)',
+                        'rgba(245, 158, 11, 0.75)',
+                        'rgba(147, 51, 234, 0.75)',
+                        'rgba(236, 72, 153, 0.75)'
                     ],
-                    borderColor: 'rgba(255, 255, 255, 0.12)',
+                    borderColor: '#ffffff',
                     borderWidth: 1.5
                 }]
             },
@@ -422,10 +422,10 @@ function renderCharts() {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: { position: 'bottom', labels: { color: '#cbd5e1', font: { size: 10 } } }
+                    legend: { position: 'bottom', labels: { color: '#334155', font: { size: 10, weight: '550' } } }
                 },
                 scales: {
-                    r: { ticks: { display: false }, grid: { color: 'rgba(255,255,255,0.06)' } }
+                    r: { ticks: { display: false }, grid: { color: 'rgba(148, 163, 184, 0.18)' } }
                 }
             }
         });
@@ -442,8 +442,8 @@ function renderCharts() {
                 datasets: [{
                     label: 'Students Count',
                     data: Object.values(overviewData.cgpaRanges),
-                    backgroundColor: 'rgba(148, 163, 184, 0.65)',
-                    borderColor: '#cbd5e1',
+                    backgroundColor: 'rgba(96, 165, 250, 0.78)',
+                    borderColor: '#3b82f6',
                     borderWidth: 1.5,
                     borderRadius: 6
                 }]
@@ -453,8 +453,8 @@ function renderCharts() {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.06)' } }
+                    x: { ticks: { color: '#475569' }, grid: { display: false } },
+                    y: { ticks: { color: '#475569' }, grid: { color: 'rgba(148, 163, 184, 0.18)' } }
                 }
             }
         });
