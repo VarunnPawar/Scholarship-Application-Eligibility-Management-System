@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Authentication — National Scholarship Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <div class="auth-wrapper">
+        <div class="auth-header-top">
+            <a href="index.html" class="back-link">
+                <svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                <span>Return to National Scholarship Portal</span>
+            </a>
+        </div>
+
+        <div class="auth-card">
+            <!-- Institutional Brand Header -->
+            <div class="auth-brand">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin-bottom: 0.5rem;">
+                    <div class="brand-crest" style="width: 32px; height: 32px;">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div style="font-size: 1.25rem; font-weight: 650; color: var(--text-primary); letter-spacing: -0.015em;">National Scholarship Portal</div>
+                </div>
+                <p class="subtitle" id="auth-subtitle">Sign in to access scholarship records, submit applications, or verify candidate eligibility.</p>
+            </div>
+
+            <!-- Tab Switcher -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab-btn active" id="tab-login-btn" onclick="switchAuthTab('login')">Sign In</button>
+                <button type="button" class="auth-tab-btn" id="tab-register-btn" onclick="switchAuthTab('register')">Register Candidate</button>
+            </div>
+
+            <!-- Alert Box -->
+            <div id="auth-alert" class="auth-alert" style="display: none;"></div>
+
+            <!-- ================= SIGN IN FORM ================= -->
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-email">Registered Candidate / Officer Email Address</label>
+                    <input type="email" id="login-email" required placeholder="e.g. rahul.sharma@gmail.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="login-password" required placeholder="Enter your password" autocomplete="current-password">
+                        <button type="button" class="pwd-toggle" onclick="togglePassword('login-password', this)">👁️</button>
+                    </div>
+                </div>
+
+                <div class="form-row-between">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="login-remember" checked>
+                        <span>Keep me signed in</span>
+                    </label>
+                    <a href="javascript:void(0)" onclick="populateDemo('student1')" class="forgot-link">Use Demo Credentials</a>
+                </div>
+
+                <button type="submit" class="btn btn-full" id="login-submit-btn">
+                    <span>Sign In to Scholarship Portal</span>
+                </button>
+
+                <!-- Quick One-Click Demo Logins -->
+                <div class="quick-demo-section">
+                    <div class="demo-divider"><span>Or test role in 1-click</span></div>
+                    <div class="demo-buttons-grid">
+                        <button type="button" class="btn-demo" onclick="oneClickLogin('admin@scholarship.gov.in', 'admin123')">
+                            <span class="demo-role admin">Admin: Dr. Rajeshwar Sharma</span>
+                            <span class="demo-email">admin@scholarship.gov.in</span>
+                        </button>
+                        <button type="button" class="btn-demo" onclick="oneClickLogin('officer@scholarship.gov.in', 'officer123')">
+                            <span class="demo-role officer">Officer: Sanjay Verma</span>
+                            <span class="demo-email">officer@scholarship.gov.in</span>
+                        </button>
+                        <button type="button" class="btn-demo" onclick="oneClickLogin('rahul.sharma@gmail.com', 'password123')">
+                            <span class="demo-role student">Student: Rahul Sharma</span>
+                            <span class="demo-email">rahul.sharma@gmail.com</span>
+                        </button>
+                        <button type="button" class="btn-demo" onclick="oneClickLogin('priya.verma@gmail.com', 'password123')">
+                            <span class="demo-role student">Student: Priya Verma</span>
+                            <span class="demo-email">priya.verma@gmail.com</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- ================= SIGN UP FORM ================= -->
+            <form id="register-form" onsubmit="handleRegister(event)" style="display: none;">
+                <div class="form-group">
+                    <label>Registration Type:</label>
+                    <div class="role-selector">
+                        <label class="role-option">
+                            <input type="radio" name="reg-role" value="student" checked onchange="handleRoleChange()">
+                            <span class="role-box">Student Applicant</span>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="reg-role" value="officer" onchange="handleRoleChange()">
+                            <span class="role-box">Review Officer</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-name">Full Legal Name</label>
+                    <input type="text" id="reg-name" required placeholder="e.g. Aarav Patel">
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-email">Email Address</label>
+                    <input type="email" id="reg-email" required placeholder="e.g. aarav.patel@gmail.com" autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="reg-password">Password (minimum 6 characters)</label>
+                    <div class="password-input-wrap">
+                        <input type="password" id="reg-password" minlength="6" required placeholder="Create a secure password" autocomplete="new-password">
+                        <button type="button" class="pwd-toggle" onclick="togglePassword('reg-password', this)">👁️</button>
+                    </div>
+                </div>
+
+                <!-- Student specific fields -->
+                <div id="student-specific-fields">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="reg-course">Academic Course</label>
+                            <select id="reg-course">
+                                <option value="BTech CSE">BTech CSE</option>
+                                <option value="BTech AI ML">BTech AI ML</option>
+                                <option value="BTech IT">BTech IT</option>
+                                <option value="BTech ECE">BTech ECE</option>
+                                <option value="BTech Mech">BTech Mech</option>
+                                <option value="BTech Civil">BTech Civil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-year">Year of Study</label>
+                            <select id="reg-year">
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="reg-cgpa">Cumulative CGPA (0.00 – 10.00)</label>
+                            <input type="number" id="reg-cgpa" step="0.01" min="0" max="10" value="8.50" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-income">Annual Family Income (₹)</label>
+                            <input type="number" id="reg-income" value="200000" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="reg-category">Social / Caste Category</label>
+                            <select id="reg-category">
+                                <option value="General">General</option>
+                                <option value="OBC">OBC</option>
+                                <option value="SC">SC</option>
+                                <option value="EWS">EWS</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reg-phone">Contact Phone Number</label>
+                            <input type="tel" id="reg-phone" placeholder="e.g. 9811234567">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-full" id="register-submit-btn" style="margin-top: 1rem;">
+                    <span>Complete Registration</span>
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="login.js"></script>
+</body>
+</html>

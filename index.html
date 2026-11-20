@@ -3,176 +3,470 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scholarship Eligibility Desk</title>
+    <title>National Scholarship Portal — Application & Eligibility Desk</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for Executive Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
 
-<header>
-    <div class="logo">Scholarship Eligibility Desk</div>
-    <nav>
-        <button class="active" onclick="switchTab('overview', this)">Overview</button>
-        <button onclick="switchTab('eligibility', this)">Eligibility</button>
-        <button onclick="switchTab('students', this)">Students</button>
-        <button onclick="switchTab('scholarships', this)">Scholarships</button>
-        <button onclick="switchTab('applications', this)">Applications</button>
-    </nav>
-</header>
+<div class="app-container">
 
-<main>
-    <section id="overview" class="section active">
-        <div class="section-header">
+    <!-- ====================================================
+         1. FIXED LEFT APPLICATION SIDEBAR (GLASS RAIL)
+         ==================================================== -->
+    <aside class="app-sidebar">
+        <!-- Portal Brand -->
+        <div class="sidebar-brand">
+            <div class="brand-crest">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">Scholarship Portal</span>
+                <span class="brand-sub">Central Aid Governance</span>
+            </div>
+        </div>
+
+        <!-- Role / Portal Switcher -->
+        <div class="sidebar-portal-nav">
+            <div class="portal-switch-group">
+                <button type="button" class="portal-switch-btn active" id="btn-portal-admin" onclick="switchPortal('admin')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <span>Admin</span>
+                </button>
+                <button type="button" class="portal-switch-btn" id="btn-portal-student" onclick="switchPortal('student')">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                    <span>Student</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Items -->
+        <div class="sidebar-nav-wrap">
+            <!-- Admin Navigation -->
+            <div id="admin-sidebar-nav">
+                <div class="nav-section-title">Administration</div>
+                <button class="nav-link-btn active" onclick="switchAdminTab('admin-analytics', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                        <span>Executive Analytics</span>
+                    </div>
+                </button>
+                <button class="nav-link-btn" onclick="switchAdminTab('admin-requests', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                        <span>Review Requests</span>
+                    </div>
+                    <span class="nav-counter" id="pending-badge-counter">0</span>
+                </button>
+                <button class="nav-link-btn" onclick="switchAdminTab('admin-scholarships', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                        <span>Scholarships Directory</span>
+                    </div>
+                </button>
+                <button class="nav-link-btn" onclick="switchAdminTab('admin-students', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <span>Student Registry</span>
+                    </div>
+                </button>
+                <button class="nav-link-btn" onclick="switchAdminTab('admin-eligibility-inspector', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="m8 11 2 2 4-4"/></svg>
+                        <span>Eligibility Diagnostics</span>
+                    </div>
+                </button>
+            </div>
+
+            <!-- Student Navigation -->
+            <div id="student-sidebar-nav" style="display: none;">
+                <div class="nav-section-title">Student Portal</div>
+                <button class="nav-link-btn active" onclick="switchStudentTab('student-eligible-tab', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                        <span>Qualifying Schemes</span>
+                    </div>
+                </button>
+                <button class="nav-link-btn" onclick="switchStudentTab('student-my-apps-tab', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>
+                        <span>My Applications</span>
+                    </div>
+                </button>
+                <button class="nav-link-btn" onclick="switchStudentTab('student-all-catalog-tab', this)">
+                    <div class="nav-link-content">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+                        <span>Full Catalog</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="sidebar-footer">
+            <span>AY 2026–27 · Central</span>
+            <span id="db-status-badge" class="badge badge-green" style="font-size:0.68rem; padding: 0.12rem 0.45rem;">● Live</span>
+        </div>
+    </aside>
+
+    <!-- ====================================================
+         2. TOP GLOBAL HEADER (FLOATING GLASS)
+         ==================================================== -->
+    <header class="app-header">
+        <div class="header-breadcrumbs">
+            <span class="breadcrumb-root" id="breadcrumb-portal-label">Admin Portal</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-active" id="breadcrumb-section-label">Executive Analytics</span>
+        </div>
+
+        <div class="header-actions">
+            <!-- Quick View Demo Tool -->
+            <div class="demo-view-tool" title="Switch role/viewpoint for presentation or evaluation">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <label>View:</label>
+                <select id="quick-view-selector" onchange="handleViewpointChange(this.value)">
+                    <option value="admin">Admin: Dr. Rajeshwar Sharma</option>
+                    <option value="officer">Review Officer: Sanjay Verma</option>
+                    <option value="student-1">Student: Rahul Sharma (OBC, 8.2)</option>
+                    <option value="student-2">Student: Priya Verma (SC, 9.1)</option>
+                    <option value="student-8">Student: Divya Nair (Gen, 9.4)</option>
+                </select>
+            </div>
+
+            <button class="btn-outline btn-sm" onclick="reseedDatabase()" title="Reset database to initial 100 students dataset">Reset DB</button>
+
+            <div id="auth-header-container">
+                <a href="login.html" class="btn btn-sm">Sign In / Register</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- ====================================================
+         3. MAIN CONTENT WORKSPACE
+         ==================================================== -->
+    <main class="app-main">
+
+        <!-- ====================================================
+             A. ADMIN & REVIEW OFFICER PORTAL VIEW
+             ==================================================== -->
+        <div id="admin-portal-view" class="portal-view active">
+
+            <!-- Admin Section 1: Executive Analytics -->
+            <section id="admin-analytics" class="sub-section active">
+                <div class="section-header">
+                    <div>
+                        <h1>Executive Analytics & Demand Intelligence</h1>
+                        <p class="subtitle">Live tracking of scholarship fund distribution, approval rates, and application pipelines.</p>
+                    </div>
+                    <button class="btn-outline btn-sm" onclick="refreshAll()">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+                        <span>Refresh Metrics</span>
+                    </button>
+                </div>
+
+                <!-- Unified Horizontal Metrics Strip (No excessive separate cards) -->
+                <div class="stats-grid" id="admin-kpi-grid"></div>
+
+                <!-- Analytical Charts Grid -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Application Lifecycle Distribution</h3>
+                            <span class="badge badge-gray">Current Status Ratio</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-status"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Applications Demand per Scholarship</h3>
+                            <span class="badge badge-gray">Applicant Volume</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-scholarships-demand"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Approved Funds by Funding Scope</h3>
+                            <span class="badge badge-gray">Disbursal Breakdown</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-funding"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Registered Students Academic Merit (CGPA)</h3>
+                            <span class="badge badge-gray">100+ Students</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="chart-cgpa"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supporting Secondary Demand Breakdown -->
+                <div class="overview-bottom">
+                    <div class="panel">
+                        <h3>Applications Demand Details</h3>
+                        <div id="apps-per-scholarship"></div>
+                    </div>
+                    <div class="panel">
+                        <h3>Unapplied Students (Action Required)</h3>
+                        <div id="unapplied-students"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Section 2: Review Scholarship Requests -->
+            <section id="admin-requests" class="sub-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Review Scholarship Requests</h1>
+                        <p class="subtitle">Evaluate submitted applications against CGPA, income limits, and eligibility criteria.</p>
+                    </div>
+                    <div class="filter-pills" id="app-status-pills">
+                        <button class="pill active" onclick="setAppFilter('All', this)">All</button>
+                        <button class="pill" onclick="setAppFilter('Pending', this)">Pending Review</button>
+                        <button class="pill" onclick="setAppFilter('Approved', this)">Approved</button>
+                        <button class="pill" onclick="setAppFilter('Rejected', this)">Rejected</button>
+                    </div>
+                </div>
+
+                <div class="controls-bar">
+                    <input type="text" id="request-search" class="search-input" placeholder="Search by student name, email, or scholarship..." oninput="renderApplications()">
+                    <div class="meta-tag" id="requests-count-info">Showing applications</div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student Applicant</th>
+                                <th>Scholarship & Scope</th>
+                                <th>Applied Date</th>
+                                <th>Status</th>
+                                <th>Audit Remarks</th>
+                                <th>Review Decision</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applications-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Admin Section 3: Scholarships Directory -->
+            <section id="admin-scholarships" class="sub-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Scholarships Directory</h1>
+                        <p class="subtitle">Ranked by funding amount. Includes National, International & Institutional schemes.</p>
+                    </div>
+                    <button class="btn" onclick="openModal('scholarship-modal')">+ Create New Scholarship</button>
+                </div>
+
+                <div class="controls-bar">
+                    <select id="filter-funding" onchange="renderScholarships()">
+                        <option value="All">All Funding Types</option>
+                        <option value="National">National</option>
+                        <option value="International">International</option>
+                        <option value="State Government">State Government</option>
+                        <option value="Private">Private</option>
+                        <option value="Corporate">Corporate</option>
+                    </select>
+                    <select id="filter-institution" onchange="renderScholarships()">
+                        <option value="All">All Institution Types</option>
+                        <option value="All Universities">All Universities</option>
+                        <option value="Private Universities Only">Private Universities Only</option>
+                        <option value="Government Colleges Only">Government Colleges Only</option>
+                    </select>
+                </div>
+
+                <div class="cards-grid" id="scholarships-grid"></div>
+            </section>
+
+            <!-- Admin Section 4: Student Records -->
+            <section id="admin-students" class="sub-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Registered Students Registry</h1>
+                        <p class="subtitle">Comprehensive student directory loaded from MongoDB database.</p>
+                    </div>
+                    <button class="btn" onclick="openModal('student-modal')">+ Add New Student</button>
+                </div>
+
+                <div class="controls-bar">
+                    <input type="text" id="student-search" class="search-input" placeholder="Search by name, course, email, or category..." oninput="studentPage=1; renderStudents()">
+                    <select id="student-category-filter" onchange="studentPage=1; renderStudents()">
+                        <option value="All">All Categories</option>
+                        <option value="General">General</option>
+                        <option value="OBC">OBC</option>
+                        <option value="SC">SC</option>
+                        <option value="EWS">EWS</option>
+                    </select>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Student Name</th>
+                                <th>Course</th>
+                                <th>Year</th>
+                                <th>CGPA</th>
+                                <th>Annual Income</th>
+                                <th>Category</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="students-tbody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="students-pagination"></div>
+            </section>
+
+            <!-- Admin Section 5: General Eligibility Inspector -->
+            <section id="admin-eligibility-inspector" class="sub-section">
+                <div class="section-header">
+                    <div>
+                        <h1>Eligibility Diagnostic Inspector</h1>
+                        <p class="subtitle">Audit qualification criteria and reasons across any registered student.</p>
+                    </div>
+                </div>
+
+                <div class="controls-bar" style="align-items: center;">
+                    <select id="eligibility-student-select" onchange="renderEligibility()"></select>
+                    <span id="eligibility-student-meta" class="subtitle"></span>
+                </div>
+
+                <div class="eligibility-banner" id="eligibility-summary"></div>
+                <div class="cards-grid" id="eligibility-cards"></div>
+            </section>
+        </div>
+
+        <!-- ====================================================
+             B. DEDICATED STUDENT PORTAL VIEW
+             ==================================================== -->
+        <div id="student-portal-view" class="portal-view">
+            <!-- Student Hero Profile Banner (Clean, Academic, Not Oversized) -->
+            <div class="student-hero-banner" id="student-hero-profile"></div>
+
+            <!-- Student Key Metrics Strip -->
+            <div class="student-stats-row" id="student-stats-row"></div>
+
+            <!-- Student Sub Section 1: Eligible Scholarships -->
+            <div id="student-eligible-tab" class="student-sub-section active">
+                <div class="section-header">
+                    <div>
+                        <h2>Recommended Scholarships You Qualify For</h2>
+                        <p class="subtitle">Based on your academic CGPA, family income verification, and category criteria.</p>
+                    </div>
+                </div>
+                <div class="cards-grid" id="student-eligible-cards"></div>
+            </div>
+
+            <!-- Student Sub Section 2: My Applications & Status Tracker -->
+            <div id="student-my-apps-tab" class="student-sub-section">
+                <div class="section-header">
+                    <div>
+                        <h2>My Application Status Tracker</h2>
+                        <p class="subtitle">Live progress and review officer remarks for your submitted scholarship requests.</p>
+                    </div>
+                </div>
+                <div class="student-apps-list" id="student-applications-tracker"></div>
+            </div>
+
+            <!-- Student Sub Section 3: Full Catalog -->
+            <div id="student-all-catalog-tab" class="student-sub-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Complete Scholarship Directory</h2>
+                        <p class="subtitle">Explore all available schemes and their prerequisite qualifications.</p>
+                    </div>
+                </div>
+                <div class="cards-grid" id="student-catalog-cards"></div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<!-- ====================================================
+     ADMIN REQUEST AUDIT & REVIEW MODAL
+     ==================================================== -->
+<div class="modal-backdrop" id="review-modal">
+    <div class="modal review-modal-card">
+        <div class="modal-header">
             <div>
-                <h1>Overview</h1>
-                <p class="subtitle">Where every application stands right now.</p>
+                <h2>Scholarship Request Review Desk</h2>
+                <p class="subtitle" id="review-modal-subtitle">Application Audit #</p>
+            </div>
+            <button type="button" class="btn-close" onclick="closeModal('review-modal')">✕</button>
+        </div>
+
+        <div class="review-grid-2">
+            <div class="review-panel">
+                <h4>👨‍🎓 Student Applicant Profile</h4>
+                <div class="review-field-group" id="rev-student-info"></div>
+            </div>
+
+            <div class="review-panel">
+                <h4>🎓 Requested Scholarship Terms</h4>
+                <div class="review-field-group" id="rev-scholarship-info"></div>
             </div>
         </div>
 
-        <div class="stats-grid" id="overview-stats"></div>
+        <!-- Automated Criteria Verification Checklist -->
+        <div class="criteria-audit-box">
+            <h4>Eligibility Verification Checklist</h4>
+            <div id="rev-criteria-checklist" class="criteria-checklist"></div>
+        </div>
 
-        <div class="overview-bottom">
-            <div class="panel">
-                <h3>Applications per scholarship</h3>
-                <div id="apps-per-scholarship"></div>
+        <!-- Review Decision & Remarks -->
+        <form onsubmit="submitReviewDecision(event)">
+            <input type="hidden" id="rev-app-id">
+            
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Review Remarks & Decision Audit Note:</label>
+                <input type="text" id="rev-remarks" required placeholder="e.g. Verified SC certificate and high academic CGPA">
+                <div class="remarks-presets">
+                    <span class="preset-tag" onclick="setRevRemark('Eligible under merit quota')">Merit Quota</span>
+                    <span class="preset-tag" onclick="setRevRemark('Verified SC/OBC certificate & income proof')">Verified Documents</span>
+                    <span class="preset-tag" onclick="setRevRemark('CGPA below required threshold')">Low CGPA</span>
+                    <span class="preset-tag" onclick="setRevRemark('Annual income exceeds grant ceiling')">Income Exceeded</span>
+                </div>
             </div>
-            <div class="panel">
-                <h3>Students who have not applied</h3>
-                <div id="unapplied-students"></div>
+
+            <div class="modal-actions review-actions">
+                <button type="button" class="btn-outline" onclick="closeModal('review-modal')">Cancel</button>
+                <button type="button" class="btn-danger" onclick="executeDecision('Rejected')">✕ Reject Application</button>
+                <button type="button" class="btn btn-success" onclick="executeDecision('Approved')">✓ Approve Scholarship</button>
             </div>
-        </div>
-    </section>
+        </form>
+    </div>
+</div>
 
-    <section id="eligibility" class="section">
-        <div class="section-header">
-            <div>
-                <h1>Eligibility check</h1>
-                <p class="subtitle">See which scholarships a student qualifies for, and why not.</p>
-            </div>
-        </div>
-
-        <div class="controls-bar" style="align-items: center;">
-            <select id="eligibility-student-select" onchange="renderEligibility()"></select>
-            <span id="eligibility-student-meta" class="subtitle"></span>
-        </div>
-
-        <div class="eligibility-banner" id="eligibility-summary"></div>
-
-        <div class="cards-grid" id="eligibility-cards"></div>
-    </section>
-
-    <section id="students" class="section">
-        <div class="section-header">
-            <div>
-                <h1>Students</h1>
-                <p class="subtitle">Everyone registered for scholarships (100+ records).</p>
-            </div>
-            <button class="btn" onclick="openModal('student-modal')">Add student</button>
-        </div>
-
-        <div class="controls-bar">
-            <input type="text" id="student-search" class="search-input" placeholder="Search by name, course, email, or category..." oninput="studentPage=1; renderStudents()">
-            <select id="student-category-filter" onchange="studentPage=1; renderStudents()">
-                <option value="All">All Categories</option>
-                <option value="General">General</option>
-                <option value="OBC">OBC</option>
-                <option value="SC">SC</option>
-                <option value="EWS">EWS</option>
-            </select>
-        </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Course</th>
-                        <th>Year</th>
-                        <th>CGPA</th>
-                        <th>Family income</th>
-                        <th>Category</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="students-tbody"></tbody>
-            </table>
-        </div>
-        <div class="pagination" id="students-pagination"></div>
-    </section>
-
-    <section id="scholarships" class="section">
-        <div class="section-header">
-            <div>
-                <h1>Scholarships</h1>
-                <p class="subtitle">Sorted by amount, highest first. Includes National, International & University scope.</p>
-            </div>
-            <button class="btn" onclick="openModal('scholarship-modal')">Add scholarship</button>
-        </div>
-
-        <div class="controls-bar">
-            <select id="filter-funding" onchange="renderScholarships()">
-                <option value="All">All Funding Types</option>
-                <option value="National">National</option>
-                <option value="International">International</option>
-                <option value="State Government">State Government</option>
-                <option value="Private">Private</option>
-                <option value="Corporate">Corporate</option>
-            </select>
-            <select id="filter-institution" onchange="renderScholarships()">
-                <option value="All">All Institution Types</option>
-                <option value="All Universities">All Universities</option>
-                <option value="Private Universities Only">Private Universities Only</option>
-                <option value="Government Colleges Only">Government Colleges Only</option>
-            </select>
-        </div>
-
-        <div class="cards-grid" id="scholarships-grid"></div>
-    </section>
-
-    <section id="applications" class="section">
-        <div class="section-header">
-            <div>
-                <h1>Applications</h1>
-                <p class="subtitle">Review, approve or reject what students submitted.</p>
-            </div>
-        </div>
-
-        <div class="filter-pills" id="app-status-pills">
-            <button class="pill active" onclick="setAppFilter('All', this)">All</button>
-            <button class="pill" onclick="setAppFilter('Pending', this)">Pending</button>
-            <button class="pill" onclick="setAppFilter('Approved', this)">Approved</button>
-            <button class="pill" onclick="setAppFilter('Rejected', this)">Rejected</button>
-        </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Student</th>
-                        <th>Scholarship & Scope</th>
-                        <th>Applied</th>
-                        <th>Status</th>
-                        <th>Remarks</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="applications-tbody"></tbody>
-            </table>
-        </div>
-    </section>
-</main>
-
+<!-- ================= MODAL: ADD STUDENT ================= -->
 <div class="modal-backdrop" id="student-modal">
     <div class="modal">
         <h2>Add New Student</h2>
         <form onsubmit="addStudent(event)">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" id="st-name" required>
+                <input type="text" id="st-name" required placeholder="e.g. Aaditya Roy">
             </div>
             <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="st-email" required>
+                <label>Email Address</label>
+                <input type="email" id="st-email" required placeholder="e.g. aaditya@gmail.com">
             </div>
             <div class="form-group">
                 <label>Course</label>
@@ -190,12 +484,12 @@
                 <input type="number" id="st-year" min="1" max="4" value="1" required>
             </div>
             <div class="form-group">
-                <label>CGPA (0 - 10)</label>
-                <input type="number" id="st-cgpa" step="0.01" min="0" max="10" required>
+                <label>CGPA (0.00 - 10.00)</label>
+                <input type="number" id="st-cgpa" step="0.01" min="0" max="10" value="8.50" required>
             </div>
             <div class="form-group">
                 <label>Annual Family Income (₹)</label>
-                <input type="number" id="st-income" required>
+                <input type="number" id="st-income" value="200000" required>
             </div>
             <div class="form-group">
                 <label>Category</label>
@@ -214,17 +508,18 @@
     </div>
 </div>
 
+<!-- ================= MODAL: ADD SCHOLARSHIP ================= -->
 <div class="modal-backdrop" id="scholarship-modal">
     <div class="modal">
         <h2>Add New Scholarship</h2>
         <form onsubmit="addScholarship(event)">
             <div class="form-group">
                 <label>Scholarship Name</label>
-                <input type="text" id="sc-name" required>
+                <input type="text" id="sc-name" required placeholder="e.g. National STEM Fellowship">
             </div>
             <div class="form-group">
-                <label>Amount (₹)</label>
-                <input type="number" id="sc-amount" required>
+                <label>Grant Amount (₹)</label>
+                <input type="number" id="sc-amount" required value="35000">
             </div>
             <div class="form-group">
                 <label>Funding Type (Scope)</label>
@@ -245,17 +540,17 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Minimum CGPA</label>
-                <input type="number" id="sc-cgpa" step="0.01" min="0" max="10" required>
+                <label>Minimum Required CGPA</label>
+                <input type="number" id="sc-cgpa" step="0.01" min="0" max="10" value="8.00" required>
             </div>
             <div class="form-group">
-                <label>Maximum Family Income (₹)</label>
-                <input type="number" id="sc-income" required>
+                <label>Maximum Family Income Ceiling (₹)</label>
+                <input type="number" id="sc-income" value="300000" required>
             </div>
             <div class="form-group">
                 <label>Eligible Category</label>
                 <select id="sc-category">
-                    <option value="All">All</option>
+                    <option value="All">All Categories</option>
                     <option value="General">General</option>
                     <option value="OBC">OBC</option>
                     <option value="SC">SC</option>
