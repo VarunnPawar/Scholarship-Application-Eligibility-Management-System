@@ -35,6 +35,26 @@ app.use(morgan('dev'));
 // Static files (serves index.html, style.css, script.js directly)
 app.use(express.static(path.join(__dirname)));
 
+// Explicit static asset routes for Vercel serverless environments
+app.get('/style.css', (req, res) => {
+    res.type('text/css');
+    res.sendFile(path.join(__dirname, 'style.css'));
+});
+
+app.get('/script.js', (req, res) => {
+    res.type('application/javascript');
+    res.sendFile(path.join(__dirname, 'script.js'));
+});
+
+app.get('/login.js', (req, res) => {
+    res.type('application/javascript');
+    res.sendFile(path.join(__dirname, 'login.js'));
+});
+
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', apiRoutes);
@@ -50,6 +70,10 @@ app.get('/api/health', (req, res) => {
 
 // Catch-all route to serve the frontend single-page application
 app.get('*', (req, res) => {
+    // If a static file with an extension was not found, return 404 rather than serving HTML
+    if (req.path.includes('.')) {
+        return res.status(404).end();
+    }
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -63,19 +87,14 @@ app.use((err, req, res, next) => {
     });
 });
 
-const server = app.listen(PORT, () => {
-    console.log(`====================================================`);
-    console.log(`🚀 Scholarship Backend running on http://localhost:${PORT}`);
-    console.log(`📊 API endpoints available at http://localhost:${PORT}/api`);
-    console.log(`💻 Frontend UI served at http://localhost:${PORT}`);
-    console.log(`====================================================`);
-});
-
-// Graceful shutdown
-process.on('SIGINT', async () => {
-    console.log('\nShutting down server gracefully...');
-    server.close(() => {
-        console.log('HTTP server closed.');
-        process.exit(0);
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`====================================================`);
+        console.log(`🚀 Scholarship Backend running on http://localhost:${PORT}`);
+        console.log(`📊 API endpoints available at http://localhost:${PORT}/api`);
+        console.log(`💻 Frontend UI served at http://localhost:${PORT}`);
+        console.log(`====================================================`);
     });
-});
+}
+
+module.exports = app;
