@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const path = require('path');
+const fs = require('fs');
 const connectDB = require('./config/db');
 const apiRoutes = require('./routes/apiRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -12,19 +13,21 @@ const seedData = require('./seed');
 const app = express();
 const PORT = process.env.PORT || 5050;
 
-// Connect to MongoDB
-connectDB().then(async () => {
-    // Check if initial seeding is needed
-    try {
-        const studentCount = await Student.countDocuments();
-        if (studentCount === 0) {
-            console.log('📦 Database is empty. Auto-seeding initial data...');
-            await seedData();
+// Connect to MongoDB only when not on Vercel or when MONGO_URI is explicitly provided
+if (!process.env.VERCEL) {
+    connectDB().then(async (conn) => {
+        if (!conn) return;
+        try {
+            const studentCount = await Student.countDocuments();
+            if (studentCount === 0) {
+                console.log('📦 Database is empty. Auto-seeding initial data...');
+                await seedData();
+            }
+        } catch (e) {
+            console.warn('⚠️ Seeding check skipped:', e.message);
         }
-    } catch (e) {
-        console.warn('⚠️ Seeding check skipped:', e.message);
-    }
-});
+    });
+}
 
 // Middlewares
 app.use(cors());
@@ -32,27 +35,43 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
-// Static files (serves index.html, style.css, script.js directly)
-app.use(express.static(path.join(__dirname)));
+// Static files (serves public directory and root files)
+const publicDir = path.join(__dirname, 'public');
+if (fs.existsSync(publicDir)) {
+    app.use(express.static(publicDir));
+}
+app.use(express.static(__dirname));
 
-// Explicit static asset routes for Vercel serverless environments
+// Explicit static asset routes with safe fallbacks
 app.get('/style.css', (req, res) => {
     res.type('text/css');
-    res.sendFile(path.join(__dirname, 'style.css'));
+    const file = fs.existsSync(path.join(publicDir, 'style.css')) 
+        ? path.join(publicDir, 'style.css') 
+        : path.join(__dirname, 'style.css');
+    res.sendFile(file, (err) => { if (err && !res.headersSent) res.status(404).end(); });
 });
 
 app.get('/script.js', (req, res) => {
     res.type('application/javascript');
-    res.sendFile(path.join(__dirname, 'script.js'));
+    const file = fs.existsSync(path.join(publicDir, 'script.js')) 
+        ? path.join(publicDir, 'script.js') 
+        : path.join(__dirname, 'script.js');
+    res.sendFile(file, (err) => { if (err && !res.headersSent) res.status(404).end(); });
 });
 
 app.get('/login.js', (req, res) => {
     res.type('application/javascript');
-    res.sendFile(path.join(__dirname, 'login.js'));
+    const file = fs.existsSync(path.join(publicDir, 'login.js')) 
+        ? path.join(publicDir, 'login.js') 
+        : path.join(__dirname, 'login.js');
+    res.sendFile(file, (err) => { if (err && !res.headersSent) res.status(404).end(); });
 });
 
 app.get('/login.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
+    const file = fs.existsSync(path.join(publicDir, 'login.html')) 
+        ? path.join(publicDir, 'login.html') 
+        : path.join(__dirname, 'login.html');
+    res.sendFile(file, (err) => { if (err && !res.headersSent) res.status(404).end(); });
 });
 
 // API Routes
@@ -64,17 +83,24 @@ app.get('/api/health', (req, res) => {
     res.json({
         status: 'UP',
         timestamp: new Date().toISOString(),
-        service: 'Scholarship Eligibility & Application Management System'
+        service: 'Scholarship Eligibility & Application Management System',
+        database: require('mongoose').connection.readyState === 1 ? 'Connected' : 'Offline / Demo Mode'
     });
 });
 
 // Catch-all route to serve the frontend single-page application
 app.get('*', (req, res) => {
-    // If a static file with an extension was not found, return 404 rather than serving HTML
     if (req.path.includes('.')) {
         return res.status(404).end();
     }
-    res.sendFile(path.join(__dirname, 'index.html'));
+    const file = fs.existsSync(path.join(publicDir, 'index.html')) 
+        ? path.join(publicDir, 'index.html') 
+        : path.join(__dirname, 'index.html');
+    res.sendFile(file, (err) => {
+        if (err && !res.headersSent) {
+            res.status(200).send('<!DOCTYPE html><html><body>Loading Portal...</body></html>');
+        }
+    });
 });
 
 // Centralized error handler

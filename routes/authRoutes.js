@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const User = require('../models/User');
 const Student = require('../models/Student');
 const { generateToken, authenticate } = require('../middleware/auth');
@@ -118,6 +119,33 @@ router.post('/login', async (req, res) => {
         }
 
         const normalizedEmail = email.toLowerCase().trim();
+
+        if (mongoose.connection.readyState !== 1) {
+            // Offline demo accounts fallback when DB is not connected
+            const demoUsers = {
+                'admin@scholarship.gov.in': { name: 'Dr. Rajeshwar Sharma', role: 'admin' },
+                'officer@scholarship.gov.in': { name: 'Sanjay Verma', role: 'officer' },
+                'rahul.sharma@gmail.com': { name: 'Rahul Sharma', role: 'student', student_id: 1 },
+                'priya.verma@gmail.com': { name: 'Priya Verma', role: 'student', student_id: 2 }
+            };
+            const demo = demoUsers[normalizedEmail];
+            if (demo && password === 'password123') {
+                const token = generateToken({ _id: 'demo_' + normalizedEmail, email: normalizedEmail, role: demo.role });
+                return res.json({
+                    success: true,
+                    message: 'Demo login successful',
+                    token,
+                    user: {
+                        id: 'demo_' + normalizedEmail,
+                        name: demo.name,
+                        email: normalizedEmail,
+                        role: demo.role,
+                        student_id: demo.student_id || null
+                    }
+                });
+            }
+        }
+
         const user = await User.findOne({ email: normalizedEmail });
 
         if (!user) {

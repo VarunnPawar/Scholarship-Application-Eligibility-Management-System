@@ -206,3 +206,7 @@ if (require.main === module) {
 }
 
 module.exports = seedData;
+module.exports.seedData = seedData;
+module.exports.scholarshipsData = scholarshipsData;
+module.exports.studentsData = studentsData;
+module.exports.applicationsData = applicationsData;
