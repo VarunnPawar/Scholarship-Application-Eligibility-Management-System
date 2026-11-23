@@ -1,9 +1,91 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Student = require('../models/Student');
 const Scholarship = require('../models/Scholarship');
 const Application = require('../models/Application');
-const seedData = require('../seed');
+const { seedData, scholarshipsData = [], studentsData = [], applicationsData = [] } = require('../seed');
+
+function isDbReady() {
+    return mongoose.connection.readyState === 1;
+}
+
+function getMockOverview() {
+    const totalStudents = studentsData.length;
+    const avgCgpa = totalStudents ? Number((studentsData.reduce((sum, s) => sum + s.cgpa, 0) / totalStudents).toFixed(2)) : 0;
+    let pendingCount = 0, approvedCount = 0, rejectedCount = 0;
+    applicationsData.forEach(item => {
+        if (item.status === 'Pending') pendingCount++;
+        if (item.status === 'Approved') approvedCount++;
+        if (item.status === 'Rejected') rejectedCount++;
+    });
+
+    const scholarshipsMap = {};
+    scholarshipsData.forEach(sc => { scholarshipsMap[sc.scholarship_id] = sc; });
+
+    const totalApprovedAmount = applicationsData
+        .filter(a => a.status === 'Approved')
+        .reduce((sum, app) => sum + (scholarshipsMap[app.scholarship_id] ? scholarshipsMap[app.scholarship_id].amount : 0), 0);
+
+    const appsCountMap = {};
+    applicationsData.forEach(item => {
+        appsCountMap[item.scholarship_id] = (appsCountMap[item.scholarship_id] || 0) + 1;
+    });
+
+    const applicationsPerScholarship = scholarshipsData.map(sc => ({
+        id: sc.scholarship_id,
+        name: sc.scholarship_name,
+        funding_type: sc.funding_type,
+        amount: sc.amount,
+        count: appsCountMap[sc.scholarship_id] || 0
+    }));
+
+    const categoryDistribution = {};
+    studentsData.forEach(c => { categoryDistribution[c.category] = (categoryDistribution[c.category] || 0) + 1; });
+
+    const cgpaRanges = {
+        '6.0 - 6.9': studentsData.filter(s => s.cgpa >= 6.0 && s.cgpa < 7.0).length,
+        '7.0 - 7.9': studentsData.filter(s => s.cgpa >= 7.0 && s.cgpa < 8.0).length,
+        '8.0 - 8.9': studentsData.filter(s => s.cgpa >= 8.0 && s.cgpa < 9.0).length,
+        '9.0 - 10.0': studentsData.filter(s => s.cgpa >= 9.0).length
+    };
+
+    const fundingDistribution = {};
+    applicationsData.filter(a => a.status === 'Approved').forEach(app => {
+        const sc = scholarshipsMap[app.scholarship_id];
+        if (sc) {
+            const ft = sc.funding_type || 'Other';
+            fundingDistribution[ft] = (fundingDistribution[ft] || 0) + sc.amount;
+        }
+    });
+
+    const appliedIds = new Set(applicationsData.map(a => a.student_id));
+    const unappliedStudents = studentsData.filter(s => !appliedIds.has(s.student_id));
+
+    return {
+        totalStudents,
+        averageCgpa: avgCgpa,
+        pendingCount,
+        approvedCount,
+        rejectedCount,
+        totalApprovedAmount,
+        applicationsPerScholarship,
+        categoryDistribution,
+        cgpaRanges,
+        fundingDistribution,
+        unappliedStudentsCount: unappliedStudents.length,
+        unappliedStudents: unappliedStudents.map(s => ({
+            id: s.student_id,
+            name: s.name,
+            course: s.course,
+            year: s.year_of_study,
+            cgpa: s.cgpa,
+            income: s.family_income,
+            category: s.category,
+            email: s.email
+        }))
+    };
+}
 
 // ==========================================
 // 1. OVERVIEW & ANALYTICS
@@ -16,6 +98,9 @@ const seedData = require('../seed');
 // - SELECT s.student_id, s.name FROM Students s LEFT JOIN Applications a WHERE a.application_id IS NULL
 router.get('/overview', async (req, res) => {
     try {
+        if (!isDbReady()) {
+            return res.json({ success: true, data: getMockOverview() });
+        }
         const totalStudents = await Student.countDocuments();
         
         // Average CGPA
@@ -138,6 +223,34 @@ router.get('/overview', async (req, res) => {
 router.get('/students', async (req, res) => {
     try {
         const { search = '', category = 'All', page, limit } = req.query;
+
+        if (!isDbReady()) {
+            let list = [...studentsData];
+            if (category && category !== 'All') {
+                list = list.filter(s => s.category === category);
+            }
+            if (search) {
+                const q = search.toLowerCase();
+                list = list.filter(s => (s.name && s.name.toLowerCase().includes(q)) || (s.email && s.email.toLowerCase().includes(q)) || (s.course && s.course.toLowerCase().includes(q)));
+            }
+            const total = list.length;
+            const formatted = list.map(s => ({
+                id: s.student_id,
+                student_id: s.student_id,
+                name: s.name,
+                email: s.email,
+                course: s.course,
+                year: s.year_of_study,
+                year_of_study: s.year_of_study,
+                income: s.family_income,
+                family_income: s.family_income,
+                category: s.category,
+                cgpa: s.cgpa,
+                phone: s.phone
+            }));
+            return res.json({ success: true, total, page: 1, limit: total, data: formatted });
+        }
+
         const filter = {};
 
         if (search) {
@@ -325,6 +438,32 @@ router.delete('/students/:id', async (req, res) => {
 router.get('/scholarships', async (req, res) => {
     try {
         const { funding_type = 'All', institution_type = 'All' } = req.query;
+
+        if (!isDbReady()) {
+            let list = [...scholarshipsData];
+            if (funding_type && funding_type !== 'All') {
+                list = list.filter(s => s.funding_type === funding_type);
+            }
+            if (institution_type && institution_type !== 'All') {
+                list = list.filter(s => s.institution_type === institution_type);
+            }
+            const formatted = list.map(sc => ({
+                id: sc.scholarship_id,
+                scholarship_id: sc.scholarship_id,
+                name: sc.scholarship_name,
+                scholarship_name: sc.scholarship_name,
+                amount: sc.amount,
+                funding_type: sc.funding_type,
+                institution_type: sc.institution_type,
+                min_cgpa: sc.min_cgpa,
+                max_income: sc.max_income,
+                category: sc.eligible_category,
+                eligible_category: sc.eligible_category,
+                deadline: sc.deadline
+            }));
+            return res.json({ success: true, count: formatted.length, data: formatted });
+        }
+
         const filter = {};
 
         if (funding_type && funding_type !== 'All') {
@@ -488,13 +627,23 @@ router.delete('/scholarships/:id', async (req, res) => {
 router.get('/eligibility/:studentId', async (req, res) => {
     try {
         const studentId = Number(req.params.studentId);
-        const student = await Student.findOne({ student_id: studentId });
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
+        let student = null;
+        let scholarships = [];
+        let existingApplications = [];
 
-        const scholarships = await Scholarship.find().sort({ amount: -1 });
-        const existingApplications = await Application.find({ student_id: studentId });
+        if (!isDbReady()) {
+            student = studentsData.find(s => s.student_id === studentId);
+            if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+            scholarships = [...scholarshipsData].sort((a, b) => b.amount - a.amount);
+            existingApplications = applicationsData.filter(a => a.student_id === studentId);
+        } else {
+            student = await Student.findOne({ student_id: studentId });
+            if (!student) {
+                return res.status(404).json({ success: false, message: 'Student not found' });
+            }
+            scholarships = await Scholarship.find().sort({ amount: -1 });
+            existingApplications = await Application.find({ student_id: studentId });
+        }
         const appMap = {};
         existingApplications.forEach(app => {
             appMap[app.scholarship_id] = app;
@@ -579,15 +728,27 @@ router.get('/eligibility/:studentId', async (req, res) => {
 router.get('/student-portal/:studentId', async (req, res) => {
     try {
         const studentId = Number(req.params.studentId);
-        const student = await Student.findOne({ student_id: studentId });
-        if (!student) {
-            return res.status(404).json({ success: false, message: 'Student not found' });
-        }
+        let student = null;
+        let scholarships = [];
+        let myApplications = [];
 
-        const [scholarships, myApplications] = await Promise.all([
-            Scholarship.find().sort({ amount: -1 }),
-            Application.find({ student_id: studentId }).sort({ application_id: -1 })
-        ]);
+        if (!isDbReady()) {
+            student = studentsData.find(s => s.student_id === studentId);
+            if (!student) return res.status(404).json({ success: false, message: 'Student not found' });
+            scholarships = [...scholarshipsData].sort((a, b) => b.amount - a.amount);
+            myApplications = applicationsData.filter(a => a.student_id === studentId);
+        } else {
+            student = await Student.findOne({ student_id: studentId });
+            if (!student) {
+                return res.status(404).json({ success: false, message: 'Student not found' });
+            }
+            const data = await Promise.all([
+                Scholarship.find().sort({ amount: -1 }),
+                Application.find({ student_id: studentId }).sort({ application_id: -1 })
+            ]);
+            scholarships = data[0];
+            myApplications = data[1];
+        }
 
         const scholarshipMap = {};
         scholarships.forEach(sc => { scholarshipMap[sc.scholarship_id] = sc; });
@@ -690,6 +851,38 @@ router.get('/student-portal/:studentId', async (req, res) => {
 router.get('/applications', async (req, res) => {
     try {
         const { status = 'All' } = req.query;
+
+        if (!isDbReady()) {
+            const studentMap = {};
+            studentsData.forEach(s => { studentMap[s.student_id] = s; });
+            const scholarshipMap = {};
+            scholarshipsData.forEach(sc => { scholarshipMap[sc.scholarship_id] = sc; });
+            let list = [...applicationsData];
+            if (status && status !== 'All') {
+                list = list.filter(a => a.status === status);
+            }
+            const formatted = list.map(a => {
+                const st = studentMap[a.student_id] || { name: 'Unknown', email: '' };
+                const sc = scholarshipMap[a.scholarship_id] || { scholarship_name: 'Unknown', amount: 0, funding_type: '', institution_type: '' };
+                return {
+                    id: a.application_id,
+                    application_id: a.application_id,
+                    student_id: a.student_id,
+                    scholarship_id: a.scholarship_id,
+                    student_name: st.name,
+                    student_email: st.email,
+                    student: { id: st.student_id, name: st.name, course: st.course, category: st.category },
+                    scholarship_name: sc.scholarship_name || sc.name,
+                    scholarship: { id: sc.scholarship_id, name: sc.scholarship_name, amount: sc.amount, funding_type: sc.funding_type, institution_type: sc.institution_type },
+                    date: a.application_date,
+                    application_date: a.application_date,
+                    status: a.status,
+                    remarks: a.remarks
+                };
+            });
+            return res.json({ success: true, count: formatted.length, data: formatted });
+        }
+
         const filter = {};
         if (status && status !== 'All') {
             filter.status = status;
