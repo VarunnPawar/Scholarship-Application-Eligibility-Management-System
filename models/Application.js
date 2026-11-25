@@ -39,7 +39,7 @@ const applicationSchema = new mongoose.Schema({
 });
 
 // Enforce unique application per student and scholarship
-applicationSchem1a.index({ student_id: 1, scholarship_id: 1 }, { unique: true });
+applicationSchema.index({ student_id: 1, scholarship_id: 1 }, { unique: true });
 
 // Virtual aliases
 applicationSchema.virtual('id').get(function () {
